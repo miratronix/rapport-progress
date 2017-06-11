@@ -1,0 +1,6 @@
+.eslintrc
+.idea
+scripts
+test
+test_results
+rapport.progress.min.js
