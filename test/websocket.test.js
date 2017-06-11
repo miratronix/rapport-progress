@@ -1,6 +1,7 @@
 'use strict';
 
 const Rapport = require('rapport');
+const RapportRouter = require('rapport-router');
 const manualWrap = require('rapport/lib/websocket/index.js');
 const manualStandardize = require('rapport/lib/standardize.js');
 const manualRequestCache = require('rapport/lib/request.cache.js');
@@ -83,6 +84,57 @@ describe('Websocket', () => {
                     resolve();
                 });
                 mockSocket.fire('message', JSON.stringify({ _rq: 'hello', _b: { hello: 'world' } }));
+            });
+        });
+
+        it('Adds a real sendProgressUpdate to the rapport-router responder object when the message is a request', () => {
+            rapport.use(RapportRouter);
+            rapport.use(plugin);
+
+            return new Promise((resolve) => {
+                testSocket = rapport.wrap(mockSocket, {
+                    router: {
+                        handle: (req, res) => {
+                            res.should.have.a.property('sendProgressUpdate').that.is.a('function');
+                            res.sendProgressUpdate('Progress!');
+                            const message = JSON.parse(mockSocket.lastSentMessage);
+                            message.should.have.a.property('_pu');
+                            message.should.have.a.property('_b').that.equals('Progress!');
+                            resolve();
+                        }
+                    }
+                });
+                mockSocket.fire('message', JSON.stringify({
+                    _rq: 'requestId',
+                    _b: {
+                        _u: 'url',
+                        _m: 'method',
+                        _b: 'body'
+                    }
+                }));
+            });
+        });
+
+        it('Adds a no-op sendProgressUpdate to the rapport-router responder object when the message is not a request', () => {
+            rapport.use(RapportRouter);
+            rapport.use(plugin);
+
+            return new Promise((resolve) => {
+                testSocket = rapport.wrap(mockSocket, {
+                    router: {
+                        handle: (req, res) => {
+                            res.should.have.a.property('sendProgressUpdate').that.is.a('function');
+                            res.sendProgressUpdate('Progress!');
+                            mockSocket.lastSentMessage.should.equal('');
+                            resolve();
+                        }
+                    }
+                });
+                mockSocket.fire('message', JSON.stringify({
+                    _u: 'url',
+                    _m: 'method',
+                    _b: 'body'
+                }));
             });
         });
 
