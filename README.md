@@ -40,7 +40,7 @@ ws.request('Something that takes a long time', timeout,
         console.log('Got a final response!');
     },
     (progressUpdate) => {
-        console.log('Got a progress update!' + progressUpdate);
+        console.log('Got a progress update:' + progressUpdate);
     }
 );
 
@@ -53,4 +53,44 @@ ws.onMessage((message, ws) => {
     // Send the final response
     ws.respond('Final response');
 })
+```
+
+## Usage with rapport-router and rapport-http
+When using this plugin in conjunction with [rapport-router](https://github.com/miratronix/rapport-router) or [rapport-http](https://github.com/miratronix/rapport-http), make sure you add the plugin to rapport _AFTER_ adding those:
+```javascript
+const rapport = Rapport().use(RapportRouter).use(RapportProgress); // Right
+const rapport = Rapport().use(RapportProgress).use(RapportRouter); // Wrong!
+```
+
+Once the plugin has been added, usage is similar to the standard usage, above:
+
+```javascript
+// Server side
+const router = rapport.Router();
+router.get('/test', (req, res) => {
+    res.sendProgressUpdate('Progress update!');
+    res.status(200).send('Final response');
+});
+rapport.wrap(existingSocket, { router: router });
+
+// Client side with promises
+const ws = rapport.websocket(WebSocket).create('ws:localhost');
+ws.get('/test')
+    .onProgressUpdate((progressUpdate) => {
+        console.log('Got a progress update:' + progressUpdate);
+    })
+    .send()
+    .then((response) => {
+        console.log('Got a final response!');
+    });
+
+// Client side with callbacks
+const ws = rapport.websocket(WebSocket).create('ws:localhost', { Promise: false });
+ws.get('/test')
+    .onProgressUpdate((progressUpdate) => {
+        console.log('Got a progress update:' + progressUpdate);
+    })
+    .send((response) => {
+        console.log('Got a final response!');
+    });
 ```
