@@ -69,7 +69,7 @@ Once the plugin has been added, usage is similar to the standard usage, above:
 const router = rapport.Router();
 router.get('/test', (req, res) => {
     res.sendProgressUpdate('Progress update!');
-    res.status(200).send('Final response');
+    res.send('Final response');
 });
 rapport.wrap(existingSocket, { router: router });
 
