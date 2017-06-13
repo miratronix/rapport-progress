@@ -315,7 +315,7 @@ describe('Websocket', () => {
             });
         });
 
-        it('Still translates a good response when using a promise', () => {
+        it('Still translates a good response when using promises', () => {
             testSocket = Rapport().use(RapportHttp).use(plugin).wrap(mockSocket);
 
             return new Promise((resolve) => {
@@ -334,7 +334,7 @@ describe('Websocket', () => {
             });
         });
 
-        it('Still translates an error response when using a promise', () => {
+        it('Still translates an error response when using promises', () => {
             testSocket = Rapport().use(RapportHttp).use(plugin).wrap(mockSocket);
 
             return new Promise((resolve) => {
